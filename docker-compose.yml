@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: blog_db_container
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_DB=blogdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=12345
+  tomcat:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db

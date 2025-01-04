@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Пост</title>
+</head>
+<body>
+<h1 th:text="${post.title}"></h1>
+<img th:src="@{${post.image}}" alt="Image">
+<div th:utext="${post.text}"></div>
+<p>Теги: <span th:text="${#strings.join(post.tags, ', ')}"></span></p>
+<button th:onclick="'window.location.href=\'/like/' + ${post.title} + '\'" th:text="'Лайк (' + ${post.likes} + ')'" ></button>
+<h2>Комментарии</h2>
+<!-- Комментарии будут отображаться здесь -->
+</body>
+</html>
