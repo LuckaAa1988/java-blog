@@ -1,20 +1,32 @@
 package ru.practicum.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import ru.practicum.model.Post;
-import ru.practicum.repository.PostRepository;
+import org.springframework.web.multipart.MultipartFile;
+import ru.practicum.dto.CreatePostDTO;
+import ru.practicum.dto.FullPostDTO;
+import ru.practicum.dto.PreviewPostDTO;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class PostService {
+public interface PostService {
+    List<PreviewPostDTO> findAllPosts() throws SQLException;
 
-    private final PostRepository postRepository;
+    FullPostDTO findById(Long postId);
 
-    public List<Post> findAllPosts() throws SQLException {
-        return postRepository.findAllPosts();
-    }
+    void createPost(CreatePostDTO postDTO);
+
+    Integer addLike(Long postId);
+
+    void deletePost(Long postId);
+
+    String addComment(Long postId, String text);
+
+    void updateComment(Long commentId, String text);
+
+    void deleteComment(Long commentId);
+
+    List<PreviewPostDTO> findAllPostsWithTag(String tag);
+
+    void updatePost(Long postId, String name, String text, String tags, MultipartFile image) throws IOException;
 }

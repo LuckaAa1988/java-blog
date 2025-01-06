@@ -1,15 +1,208 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Блог</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .post-container {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .post-container h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .post-container p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            text-align: center;
+        }
+
+        .form-container {
+            margin-top: 30px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .form-container label {
+            font-size: 16px;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-container input, .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-container button {
+            width: 100%;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .form-container button:hover {
+            background-color: #27ae60;
+        }
+
+        .post-tags {
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+        }
+
+        .post-tags span {
+            margin: 0 5px;
+            padding: 3px 6px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 12px;
+        }
+
+        .post-container hr {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+        }
+
+        #imagePreview {
+            width: 200px;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+    </style>
+    <script>
+        function toggleForm() {
+            var form = document.getElementById("addPostForm");
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const output = document.getElementById('imagePreview');
+                output.src = reader.result;
+                output.style.display = "block";
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 </head>
 <body>
-<h1>Лента постов</h1>
-<div th:each="post : ${posts}">
-    <p th:text="${post.id}"></p>
-    <p th:text="${post.name}"></p>
-    <p th:text="${post.text}"></p>
+
+<div class="container">
+    <h1>Лента постов</h1>
+
+    <button type="button" onclick="toggleForm()">Добавить пост</button>
+
+    <div id="addPostForm" class="form-container" style="display: none;">
+        <form th:action="@{/posts}" method="post" th:object="${createPost}" enctype="multipart/form-data">
+            <label for="name">Название:</label>
+            <input type="text" id="name" th:field="*{name}" required/>
+
+            <label for="image">Изображение:</label>
+            <input type="file" id="image" th:field="*{image}" accept="image/*" onchange="previewImage(event)" required/>
+            <img id="imagePreview" style="display: none;"/>
+
+            <label for="text">Текст:</label>
+            <textarea id="text" th:field="*{text}" required></textarea>
+
+            <label for="tags">Теги:</label>
+            <input type="text" id="tags" th:field="*{tags}" placeholder="Введите теги через запятую" required/>
+
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+
+    <hr/>
+
+    <div th:each="post : ${posts}">
+        <div class="post-container">
+            <h2><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.name}"></a></h2>
+            <img th:src="'data:image/jpeg;base64,' + ${post.image}" alt="Image"/>
+            <p th:text="${post.shortText}"></p>
+            <p>Лайков: <span th:text="${post.likes}"></span></p>
+            <p>Комментариев: <span th:text="${post.commentsCount}"></span></p>
+            <p>Тэги:
+                <span th:each="tag : ${post.tags}">
+                <a th:href="@{/posts/tag/{tag}(tag=${tag})}" th:text="${tag}" class="tag-link"></a>
+                <span>&nbsp;</span>
+            </span>
+            </p>
+            <hr/>
+        </div>
+    </div>
 </div>
+
 </body>
 </html>

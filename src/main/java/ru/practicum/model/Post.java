@@ -2,6 +2,8 @@ package ru.practicum.model;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @RequiredArgsConstructor
@@ -12,5 +14,9 @@ import lombok.*;
 public class Post {
     Long id;
     String name;
+    byte[] image;
     String text;
+    List<String> tags;
+    Integer likes;
+    Integer commentsCount;
 }

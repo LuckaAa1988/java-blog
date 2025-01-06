@@ -1,25 +1,32 @@
 package ru.practicum.repository;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import ru.practicum.model.Comment;
 import ru.practicum.model.Post;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-@Repository
-@RequiredArgsConstructor
-public class PostRepository {
+public interface PostRepository {
+    List<Post> findAllPosts() throws SQLException;
+    Optional<Post> findById(Long postId);
+    boolean existById(Long postId);
+    List<Comment> findAllCommentsByPostId(Long postId);
 
-    private final JdbcTemplate jdbcTemplate;
+    void createPost(Post post);
 
-    public List<Post> findAllPosts() throws SQLException {
-        return jdbcTemplate.query("SELECT id, name, text FROM posts", (rs, rowNum) -> Post.builder()
-                .id(rs.getLong("id"))
-                .name(rs.getString("name"))
-                .text(rs.getString("text"))
-                .build()
-        );
-    }
+    Integer addLike(Long postId);
+
+    void deletePost(Long postId);
+
+    String addComment(Long postId, String text);
+
+    void updateComment(Long commentId, String text);
+
+    void deleteComment(Long commentId);
+
+    List<Post> findAllPostsWithTag(String tag);
+
+    void updatePost(Post post);
 }

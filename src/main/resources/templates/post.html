@@ -3,14 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <title>Пост</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .post-container {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .likes {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .form-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .comment-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .comment-text {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            max-width: 90%;
+            word-wrap: break-word;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .edit-comment-form {
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+        }
+
+        textarea {
+            width: 80%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .form-container button {
+            width: 100%;
+        }
+    </style>
+    <script>
+        function toggleForm() {
+            var form = document.getElementById("editPostForm");
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const output = document.getElementById('imagePreview');
+                output.src = reader.result;
+                output.style.display = "block";
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 </head>
 <body>
-<h1 th:text="${post.title}"></h1>
-<img th:src="@{${post.image}}" alt="Image">
-<div th:utext="${post.text}"></div>
-<p>Теги: <span th:text="${#strings.join(post.tags, ', ')}"></span></p>
-<button th:onclick="'window.location.href=\'/like/' + ${post.title} + '\'" th:text="'Лайк (' + ${post.likes} + ')'" ></button>
-<h2>Комментарии</h2>
-<!-- Комментарии будут отображаться здесь -->
+
+<div class="container">
+    <div class="post-container">
+        <h2 th:text="${post.name}"></h2>
+        <img th:src="'data:image/jpeg;base64,' + ${post.image}" alt="Image"/>
+        <p th:text="${post.text}"></p>
+        <p>Тэги:
+            <span th:each="tag : ${post.tags}">
+                <a th:href="@{/posts/tag/{tag}(tag=${tag})}" th:text="${tag}" class="tag-link"></a>
+                <span>&nbsp;</span>
+            </span>
+        </p>
+        <div class="likes">
+            Лайков: <span id="likesCount" th:text="${post.likes}"></span>
+        </div>
+        <button id="likeButton" th:data-id="${post.id}">👍</button>
+    </div>
+
+    <div class="post-container">
+        <button type="button" onclick="toggleForm()">Изменить пост</button>
+        <div id="editPostForm" class="form-container" style="display: none;">
+            <form th:action="@{/posts/{id}(id=${post.id})}" method="post" th:object="${createPost}"
+                  enctype="multipart/form-data">
+                <input type="hidden" name="_method" value="patch"/>
+                <label for="name">Название:</label>
+                <input type="text" id="name" th:field="*{name}"/>
+
+                <label for="image">Изображение:</label>
+                <input type="file" id="image" th:field="*{image}" accept="image/*" onchange="previewImage(event)"/>
+                <img id="imagePreview" style="display: none;"/>
+
+                <label for="text">Текст:</label>
+                <textarea id="text" th:field="*{text}"></textarea>
+
+                <label for="tags">Теги:</label>
+                <input type="text" id="tags" th:field="*{tags}" placeholder="Введите теги через запятую"/>
+
+                <button type="submit">Изменить</button>
+            </form>
+        </div>
+    </div>
+    <div class="form-container">
+        <form th:action="@{/posts/{id}(id=${post.id})}" method="post">
+            <input type="hidden" name="_method" value="delete"/>
+            <button type="submit">Удалить</button>
+        </form>
+    </div>
+
+    <div class="form-container">
+        <form th:action="@{/posts/{id}/comment(id=${post.id})}" method="post">
+            <textarea th:field="*{comment.text}" required></textarea>
+            <br/>
+            <button type="submit">Добавить комментарий</button>
+        </form>
+    </div>
+
+    <div class="comment-container">
+        <p>Комментарии:</p>
+        <div th:each="comment : ${post.comments}">
+            <p class="comment-text" th:text="${comment.text}" th:data-id="${comment.id}"
+               onclick="editComment(this)"></p>
+
+            <form th:action="@{/posts/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
+                  method="post" class="edit-comment-form">
+                <input type="hidden" name="_method" value="patch"/>
+                <textarea name="text" th:field="*{comment.text}" required></textarea>
+            </form>
+
+            <form th:action="@{/posts/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
+                  method="post">
+                <input type="hidden" name="_method" value="delete"/>
+                <button type="submit">Удалить</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editComment(commentElement) {
+        const commentText = commentElement.innerText;
+        const commentId = commentElement.getAttribute('data-id');
+        const form = commentElement.nextElementSibling;
+        const textarea = form.querySelector('textarea');
+
+        textarea.value = commentText;
+        form.style.display = 'block';
+        commentElement.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.ctrlKey && event.key === 'Enter') {
+            const form = document.querySelector('.edit-comment-form');
+            if (form) {
+                form.submit();
+            }
+        }
+    });
+</script>
+
+<script>
+    document.getElementById('likeButton').addEventListener('click', function () {
+        const postId = this.getAttribute('data-id');
+
+        fetch(`/posts/${postId}/like`, {
+            method: 'POST',
+        })
+            .then(response => response.text())
+            .then(updatedLikes => {
+                document.getElementById('likesCount').innerText = updatedLikes;
+            })
+            .catch(error => console.error('Ошибка:', error));
+    });
+</script>
+
 </body>
 </html>
