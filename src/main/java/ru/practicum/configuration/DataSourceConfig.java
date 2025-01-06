@@ -17,7 +17,7 @@ public class DataSourceConfig {
     private String driver;
     @Value("${datasource.url}")
     private String url;
-    @Value("${datasource.user}")
+    @Value("${datasource.username}")
     private String user;
     @Value("${datasource.password}")
     private String password;
