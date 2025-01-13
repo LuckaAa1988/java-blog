@@ -139,6 +139,22 @@
             margin-top: 10px;
             border-radius: 8px;
         }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
 
     </style>
     <script>
@@ -161,6 +177,7 @@
 <body>
 
 <div class="container">
+    <button class="back-button" onclick="window.location.href='/posts'">На главную</button>
     <h1>Лента постов</h1>
 
     <button type="button" onclick="toggleForm()">Добавить пост</button>
@@ -184,8 +201,6 @@
         </form>
     </div>
 
-    <hr/>
-
     <div th:each="post : ${posts}">
         <div class="post-container">
             <h2><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.name}"></a></h2>
@@ -199,10 +214,11 @@
                 <span>&nbsp;</span>
             </span>
             </p>
-            <hr/>
         </div>
     </div>
+    <div class="post-container">
+        <h2><a th:href="@{/posts?size=10}">10.. </a><a th:href="@{/posts?size=20}">20.. </a><a th:href="@{/posts?size=50}">50.. </a></h2>
+    </div>
 </div>
-
 </body>
 </html>

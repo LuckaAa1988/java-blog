@@ -110,6 +110,23 @@
         .form-container button {
             width: 100%;
         }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
     </style>
     <script>
         function toggleForm() {
@@ -131,6 +148,8 @@
 <body>
 
 <div class="container">
+    <button class="back-button" onclick="window.location.href='/posts'">На главную</button>
+
     <div class="post-container">
         <h2 th:text="${post.name}"></h2>
         <img th:src="'data:image/jpeg;base64,' + ${post.image}" alt="Image"/>

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.practicum.dto.CommentDTO;
 import ru.practicum.dto.CreatePostDTO;
+import ru.practicum.exception.PostNotFoundException;
 import ru.practicum.service.PostService;
 
 import java.io.IOException;
@@ -22,15 +23,16 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
-    public String blogPage(Model model) throws SQLException {
-        model.addAttribute("posts", postService.findAllPosts());
+    public String blogPage(@RequestParam(value = "size", defaultValue = "10") Integer size,
+                           Model model) throws SQLException {
+        model.addAttribute("posts", postService.findAllPosts(size));
         model.addAttribute("createPost", CreatePostDTO.builder().build());
         return "blog";
     }
 
     @GetMapping("/{postId}")
     public String postPage(@PathVariable("postId") Long postId,
-                           Model model) {
+                           Model model) throws PostNotFoundException {
         model.addAttribute("post", postService.findById(postId));
         model.addAttribute("comment", CommentDTO.builder().build());
         model.addAttribute("createPost", CreatePostDTO.builder().build());

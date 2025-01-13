@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.model.Comment;
 import ru.practicum.model.Post;
 import ru.practicum.repository.PostRepository;
@@ -19,7 +20,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     private final JdbcTemplate jdbcTemplate;
     private final String FIND_ALL_POSTS_SQL = """
-            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, COUNT(c.id)
+            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, COUNT(c.id) AS count
             FROM posts AS p
                      LEFT JOIN comments c on p.id = c.post_id
                      LEFT JOIN tags_posts tp ON p.id = tp.post_id
@@ -27,7 +28,7 @@ public class PostRepositoryImpl implements PostRepository {
             GROUP BY p.id, p.name, p.image, p.text, p.likes, t.tag
             """;
     private final String FIND_ALL_POSTS_WITH_TAG_SQL = """
-            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, COUNT(c.id)
+            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, COUNT(c.id) AS count
             FROM posts AS p
                      LEFT JOIN comments c on p.id = c.post_id
                      LEFT JOIN tags_posts tp ON p.id = tp.post_id
@@ -50,6 +51,14 @@ public class PostRepositoryImpl implements PostRepository {
             """;
     private final String TAGS_POST_SQL = """
             INSERT INTO tags_posts (post_id, tag_id) VALUES (?, ?);
+            """;
+    private final String FIND_TAG_BY_POST_ID_SQL = """
+            SELECT t.tag FROM tags t
+            JOIN tags_posts tp ON t.id = tp.tag_id
+            WHERE tp.post_id = ?
+            """;
+    private final String DELETE_TAGS_SQL = """
+            DELETE FROM tags_posts WHERE post_id = ?
             """;
     private final String FIND_TAG_SQL = """
             SELECT id FROM tags WHERE tag = ?
@@ -80,7 +89,7 @@ public class PostRepositoryImpl implements PostRepository {
             """;
 
     @Override
-    public List<Post> findAllPosts() {
+    public List<Post> findAllPosts(Integer size) {
         Map<Long, Post> postMap = new HashMap<>();
 
         jdbcTemplate.query(FIND_ALL_POSTS_SQL, rs -> {
@@ -105,10 +114,14 @@ public class PostRepositoryImpl implements PostRepository {
                 post.getTags().add(tag);
             }
         });
-        return new ArrayList<>(postMap.values()).reversed();
+        if (size > postMap.values().size()) {
+            size = postMap.values().size();
+        }
+        return new ArrayList<>(postMap.values()).reversed().subList(0, size);
     }
 
     @Override
+    @Transactional
     public List<Post> findAllPostsWithTag(String tag) {
         Map<Long, Post> postMap = new HashMap<>();
 
@@ -136,10 +149,7 @@ public class PostRepositoryImpl implements PostRepository {
         }, tag);
 
         for (Post post : postMap.values()) {
-            List<String> allTags = jdbcTemplate.query(
-                    "SELECT t.tag FROM tags t " +
-                            "JOIN tags_posts tp ON t.id = tp.tag_id " +
-                            "WHERE tp.post_id = ?",
+            List<String> allTags = jdbcTemplate.query(FIND_TAG_BY_POST_ID_SQL,
                     (rs, rowNum) -> rs.getString("tag"),
                     post.getId()
             );
@@ -151,9 +161,13 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void updatePost(Post post) {
         jdbcTemplate.update(UPDATE_POST_SQL, post.getName(), post.getText(), post.getImage(), post.getId());
         var keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(DELETE_TAGS_SQL, post.getId());
+
         for (String tag : post.getTags()) {
             Long tagId = jdbcTemplate.query(FIND_TAG_SQL, rs -> {
                 if (rs.next()) {
@@ -220,6 +234,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void createPost(Post post) {
         var keyHolder = new GeneratedKeyHolder();
 

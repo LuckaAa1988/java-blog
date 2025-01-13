@@ -4,15 +4,16 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.practicum.dto.CreatePostDTO;
 import ru.practicum.dto.FullPostDTO;
 import ru.practicum.dto.PreviewPostDTO;
+import ru.practicum.exception.PostNotFoundException;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
 public interface PostService {
-    List<PreviewPostDTO> findAllPosts() throws SQLException;
+    List<PreviewPostDTO> findAllPosts(Integer size) throws SQLException;
 
-    FullPostDTO findById(Long postId);
+    FullPostDTO findById(Long postId) throws PostNotFoundException;
 
     void createPost(CreatePostDTO postDTO);
 

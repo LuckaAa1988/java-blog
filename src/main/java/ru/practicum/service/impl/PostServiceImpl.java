@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.practicum.dto.CreatePostDTO;
 import ru.practicum.dto.FullPostDTO;
 import ru.practicum.dto.PreviewPostDTO;
+import ru.practicum.exception.PostNotFoundException;
 import ru.practicum.mapper.PostMapper;
 import ru.practicum.repository.PostRepository;
 import ru.practicum.service.PostService;
@@ -25,9 +26,9 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
 
-    public List<PreviewPostDTO> findAllPosts() throws SQLException {
+    public List<PreviewPostDTO> findAllPosts(Integer size) throws SQLException {
         log.info("Запрос на получение всех постов");
-        return postRepository.findAllPosts().stream()
+        return postRepository.findAllPosts(size).stream()
                 .map(postMapper::toPreviewDTO)
                 .collect(Collectors.toList());
     }
@@ -64,9 +65,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public FullPostDTO findById(Long postId) {
+    public FullPostDTO findById(Long postId) throws PostNotFoundException {
         log.info("Получение поста с id {}", postId);
-        var post = postRepository.findById(postId).get();
+        var post = postRepository.findById(postId).orElseThrow(
+                () -> new PostNotFoundException("Пост с id " + postId + " не найден"));
         var comments = postRepository.findAllCommentsByPostId(postId).reversed();
         return postMapper.toFullDTO(post, comments);
     }

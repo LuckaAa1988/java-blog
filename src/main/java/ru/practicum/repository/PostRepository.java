@@ -4,12 +4,11 @@ import ru.practicum.model.Comment;
 import ru.practicum.model.Post;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository {
-    List<Post> findAllPosts() throws SQLException;
+    List<Post> findAllPosts(Integer size) throws SQLException;
     Optional<Post> findById(Long postId);
     boolean existById(Long postId);
     List<Comment> findAllCommentsByPostId(Long postId);
