@@ -23,7 +23,7 @@ public class PostMapper {
                 .id(post.getId())
                 .name(post.getName())
                 .image(Base64.getMimeEncoder().encodeToString(post.getImage()))
-                .shortText(post.getText())
+                .shortText(post.getText().length() > 300 ? post.getText().substring(0, 300) : post.getText())
                 .likes(post.getLikes())
                 .commentsCount(post.getCommentsCount())
                 .tags(post.getTags())
