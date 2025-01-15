@@ -14,7 +14,7 @@ import java.util.List;
 public class Post {
     Long id;
     String name;
-    byte[] image;
+    String image;
     String text;
     List<String> tags;
     Integer likes;

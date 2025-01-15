@@ -15,7 +15,7 @@ public interface PostService {
 
     FullPostDTO findById(Long postId) throws PostNotFoundException;
 
-    void createPost(CreatePostDTO postDTO);
+    void createPost(CreatePostDTO postDTO) throws IOException;
 
     Integer addLike(Long postId);
 

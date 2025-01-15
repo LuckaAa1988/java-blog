@@ -22,7 +22,7 @@
     ```
 4. Запустите приложение:
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 
 5. Перейдите в браузер по адресу:
