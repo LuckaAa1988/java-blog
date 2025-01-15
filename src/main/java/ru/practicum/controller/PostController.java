@@ -54,12 +54,12 @@ public class PostController {
                           @RequestParam("image") MultipartFile image) throws IOException {
         postService.createPost(CreatePostDTO.builder()
                 .name(name)
-                .text(text)
+                .text(text.replace("\n", "<br>"))
                 .tags(Arrays.asList(tags.trim().split(",")).stream()
                         .map(String::trim)
                         .filter(tag -> !tag.isEmpty())
                         .collect(Collectors.toList()))
-                .image(image.getBytes())
+                .image(image)
                 .build());
         return "redirect:/posts";
     }
@@ -84,28 +84,6 @@ public class PostController {
     @ResponseBody
     public String addLike(@PathVariable("postId") Long postId) {
         return String.valueOf(postService.addLike(postId));
-    }
-
-    @PostMapping("/{postId}/comment")
-    public String addComment(@PathVariable("postId") Long postId,
-                             @RequestParam(value = "text") String text) {
-        postService.addComment(postId, text);
-        return "redirect:/posts/" + postId;
-    }
-
-    @PatchMapping("/{postId}/comment/{commentId}")
-    public String updateComment(@PathVariable("postId") Long postId,
-                                @PathVariable("commentId") Long commentId,
-                                @RequestParam(value = "text") String text) {
-        postService.updateComment(commentId, text);
-        return "redirect:/posts/" + postId;
-    }
-
-    @DeleteMapping("/{postId}/comment/{commentId}")
-    public String deletePost(@PathVariable("postId") Long postId,
-                             @PathVariable("commentId") Long commentId) {
-        postService.deleteComment(commentId);
-        return "redirect:/posts/" + postId;
     }
 
 }

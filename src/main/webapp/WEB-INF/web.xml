@@ -4,4 +4,5 @@
 
 <web-app>
   <display-name>java-blog</display-name>
+  <Context docBase="/usr/local/tomcat/uploads" path="/uploads" />
 </web-app>

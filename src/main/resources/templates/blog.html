@@ -69,7 +69,11 @@
             font-size: 16px;
             line-height: 1.6;
             color: #555;
-            text-align: center;
+            text-align: left;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
         }
 
         .form-container {
@@ -204,8 +208,8 @@
     <div th:each="post : ${posts}">
         <div class="post-container">
             <h2><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.name}"></a></h2>
-            <img th:src="'data:image/jpeg;base64,' + ${post.image}" alt="Image"/>
-            <p th:text="${post.shortText}"></p>
+            <img th:src="@{${post.image}}" alt="Image"/>
+            <p th:utext="${post.shortText}"></p>
             <p>Лайков: <span th:text="${post.likes}"></span></p>
             <p>Комментариев: <span th:text="${post.commentsCount}"></span></p>
             <p>Тэги:

@@ -20,21 +20,21 @@ public class PostRepositoryImpl implements PostRepository {
 
     private final JdbcTemplate jdbcTemplate;
     private final String FIND_ALL_POSTS_SQL = """
-            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, COUNT(c.id) AS count
+            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, (SELECT COUNT(c.id)
+                                                                   FROM comments c
+                                                                   WHERE c.post_id = p.id) AS count
             FROM posts AS p
-                     LEFT JOIN comments c on p.id = c.post_id
                      LEFT JOIN tags_posts tp ON p.id = tp.post_id
                      LEFT JOIN tags t ON tp.tag_id = t.id
-            GROUP BY p.id, p.name, p.image, p.text, p.likes, t.tag
             """;
     private final String FIND_ALL_POSTS_WITH_TAG_SQL = """
-            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, COUNT(c.id) AS count
+            SELECT p.id, p.name, p.image, p.text, p.likes, t.tag, (SELECT COUNT(c.id)
+                                                                   FROM comments c
+                                                                   WHERE c.post_id = p.id) AS count
             FROM posts AS p
-                     LEFT JOIN comments c on p.id = c.post_id
                      LEFT JOIN tags_posts tp ON p.id = tp.post_id
                      LEFT JOIN tags t ON tp.tag_id = t.id
                      WHERE t.tag = ?
-            GROUP BY p.id, p.name, p.image, p.text, p.likes, t.tag
             """;
     private final String FIND_POST_BY_ID_SQL = """
             SELECT p.id, p.name, p.image, p.text, p.likes, t.tag
@@ -100,7 +100,7 @@ public class PostRepositoryImpl implements PostRepository {
                 post = Post.builder()
                         .id(postId)
                         .name(rs.getString("name"))
-                        .image(rs.getBytes("image"))
+                        .image(rs.getString("image"))
                         .text(rs.getString("text"))
                         .likes(rs.getInt("likes"))
                         .commentsCount(rs.getInt("count"))
@@ -133,7 +133,7 @@ public class PostRepositoryImpl implements PostRepository {
                 post = Post.builder()
                         .id(postId)
                         .name(rs.getString("name"))
-                        .image(rs.getBytes("image"))
+                        .image(rs.getString("image"))
                         .text(rs.getString("text"))
                         .likes(rs.getInt("likes"))
                         .commentsCount(rs.getInt("count"))
@@ -199,7 +199,7 @@ public class PostRepositoryImpl implements PostRepository {
                     return Post.builder()
                             .id(rs.getLong("id"))
                             .name(rs.getString("name"))
-                            .image(rs.getBytes("image"))
+                            .image(rs.getString("image"))
                             .text(rs.getString("text"))
                             .likes(rs.getInt("likes"))
                             .tags(new ArrayList<>())
@@ -242,7 +242,7 @@ public class PostRepositoryImpl implements PostRepository {
             PreparedStatement ps = con.prepareStatement(CREATE_POST_SQL, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, post.getName());
             ps.setString(2, post.getText());
-            ps.setBytes(3, post.getImage());
+            ps.setString(3, post.getImage());
             return ps;
         }, keyHolder);
 

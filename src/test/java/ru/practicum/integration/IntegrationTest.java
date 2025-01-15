@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.practicum.configuration.TestConfig;
@@ -36,12 +37,12 @@ public class IntegrationTest {
 
 
     @Test
-    public void createPostTest() throws PostNotFoundException {
+    public void createPostTest() throws PostNotFoundException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
         postService.createPost(post);
 
@@ -57,19 +58,19 @@ public class IntegrationTest {
     }
 
     @Test
-    public void findAllPostsTest() throws SQLException {
+    public void findAllPostsTest() throws SQLException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         var post2 = CreatePostDTO.builder()
                 .name("Пост 2")
                 .tags(List.of())
                 .text("Текст для поста 2")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -84,19 +85,19 @@ public class IntegrationTest {
     }
 
     @Test
-    void findAllPostsWithTagTest() {
+    void findAllPostsWithTagTest() throws IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of("Тэг 1"))
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         var post2 = CreatePostDTO.builder()
                 .name("Пост 2")
                 .tags(List.of("Тэг 2"))
                 .text("Текст для поста 2")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -116,7 +117,7 @@ public class IntegrationTest {
                 .name("Пост 1")
                 .tags(List.of("Тэг 1"))
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -125,7 +126,7 @@ public class IntegrationTest {
                 "Обновленный пост",
                 "Обновленный текст",
                 "Тэг",
-                null);
+                new MockMultipartFile(" ", new byte[]{}));
 
         var updatedPost = postService.findById(1L);
 
@@ -140,12 +141,12 @@ public class IntegrationTest {
     }
 
     @Test
-    void addLikeTest() throws PostNotFoundException {
+    void addLikeTest() throws PostNotFoundException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -164,12 +165,12 @@ public class IntegrationTest {
     }
 
     @Test
-    void deletePostTest() throws PostNotFoundException {
+    void deletePostTest() throws PostNotFoundException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -184,12 +185,12 @@ public class IntegrationTest {
     }
 
     @Test
-    void addCommentTest() throws PostNotFoundException {
+    void addCommentTest() throws PostNotFoundException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -205,12 +206,12 @@ public class IntegrationTest {
     }
 
     @Test
-    void updateCommentTest() throws PostNotFoundException {
+    void updateCommentTest() throws PostNotFoundException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);
@@ -235,12 +236,12 @@ public class IntegrationTest {
     }
 
     @Test
-    void deleteCommentTest() throws PostNotFoundException {
+    void deleteCommentTest() throws PostNotFoundException, IOException {
         var post = CreatePostDTO.builder()
                 .name("Пост 1")
                 .tags(List.of())
                 .text("Текст для поста 1")
-                .image(new byte[]{})
+                .image(new MockMultipartFile(" ", new byte[]{}))
                 .build();
 
         postService.createPost(post);

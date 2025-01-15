@@ -9,13 +9,18 @@ import ru.practicum.dto.FullPostDTO;
 import ru.practicum.dto.PreviewPostDTO;
 import ru.practicum.exception.PostNotFoundException;
 import ru.practicum.mapper.PostMapper;
+import ru.practicum.model.Post;
 import ru.practicum.repository.PostRepository;
 import ru.practicum.service.PostService;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,21 +50,27 @@ public class PostServiceImpl implements PostService {
     public void updatePost(Long postId, String name, String text, String tags, MultipartFile image) throws IOException {
         log.info("Обновление поста с id {}", postId);
         var post = postRepository.findById(postId).get();
-        post.setId(postId);
-        if (name != null) {
+        if (!name.isEmpty()) {
             post.setName(name);
         }
-        if (text != null) {
-            post.setText(text);
+        if (!text.isEmpty()) {
+            post.setText(text.replace("\n", "<br>"));
         }
-        if (tags != null) {
+        if (!tags.isEmpty()) {
             post.setTags(Arrays.asList(tags.trim().split(",")).stream()
                     .map(String::trim)
                     .filter(tag -> !tag.isEmpty())
                     .collect(Collectors.toList()));
         }
-        if (image != null) {
-            post.setImage(image.getBytes());
+        if (!image.isEmpty()) {
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            Path filePath = Paths.get("uploads/" + fileName);
+
+            Files.createDirectories(filePath.getParent());
+            Files.write(filePath, image.getBytes());
+
+            String imageUrl = "/uploads/" + fileName;
+            post.setImage(imageUrl);
         }
         postRepository.updatePost(post);
     }
@@ -74,9 +85,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void createPost(CreatePostDTO postDTO) {
+    public void createPost(CreatePostDTO postDTO) throws IOException {
         log.info("Создание поста с данными: {}", postDTO);
-        postRepository.createPost(postMapper.fromDTO(postDTO));
+        String fileName = UUID.randomUUID() + "_" + postDTO.getImage().getOriginalFilename();
+        Path filePath = Paths.get("uploads/" + fileName);
+
+        Files.createDirectories(filePath.getParent());
+        Files.write(filePath, postDTO.getImage().getBytes());
+
+        String imageUrl = "/uploads/" + fileName;
+        postRepository.createPost(Post.builder()
+                .name(postDTO.getName())
+                .text(postDTO.getText())
+                .image(imageUrl)
+                .tags(postDTO.getTags())
+                .build());
     }
 
     @Override
