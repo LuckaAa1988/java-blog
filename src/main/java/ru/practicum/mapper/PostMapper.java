@@ -22,8 +22,8 @@ public class PostMapper {
         return PreviewPostDTO.builder()
                 .id(post.getId())
                 .name(post.getName())
-                .image(Base64.getMimeEncoder().encodeToString(post.getImage()))
-                .shortText(post.getText().length() > 300 ? post.getText().substring(0, 300) : post.getText())
+                .image(post.getImage())
+                .shortText(getShortenedText(post.getText()))
                 .likes(post.getLikes())
                 .commentsCount(post.getCommentsCount())
                 .tags(post.getTags())
@@ -34,7 +34,7 @@ public class PostMapper {
         return FullPostDTO.builder()
                 .id(post.getId())
                 .name(post.getName())
-                .image(Base64.getMimeEncoder().encodeToString(post.getImage()))
+                .image(post.getImage())
                 .text(post.getText())
                 .likes(post.getLikes())
                 .tags(post.getTags())
@@ -44,12 +44,17 @@ public class PostMapper {
                 .build();
     }
 
-    public Post fromDTO(CreatePostDTO postDTO) {
-        return Post.builder()
-                .name(postDTO.getName())
-                .text(postDTO.getText())
-                .image(postDTO.getImage())
-                .tags(postDTO.getTags())
-                .build();
+    private String getShortenedText(String text) {
+        int maxLines  = 3;
+        String[] lines = text.split("<br>");
+        StringBuilder shortenedText = new StringBuilder();
+
+        for (int i = 0; i < Math.min(lines.length, maxLines); i++) {
+            if (lines[i].isBlank()) {
+                break;
+            }
+            shortenedText.append(lines[i]).append("<br>");
+        }
+        return shortenedText.toString();
     }
 }

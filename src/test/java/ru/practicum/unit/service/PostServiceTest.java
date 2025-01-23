@@ -3,10 +3,12 @@ package ru.practicum.unit.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.mock.web.MockMultipartFile;
 import ru.practicum.dto.CreatePostDTO;
 import ru.practicum.dto.FullPostDTO;
 import ru.practicum.dto.PreviewPostDTO;
@@ -18,12 +20,19 @@ import ru.practicum.repository.PostRepository;
 import ru.practicum.service.impl.PostServiceImpl;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -50,7 +59,7 @@ public class PostServiceTest {
                 .text("Текст для поста 1")
                 .tags(List.of("тег1", "тег2"))
                 .likes(3)
-                .image(new byte[]{})
+                .image(" ")
                 .commentsCount(2)
                 .build();
         post2 = Post.builder()
@@ -59,7 +68,7 @@ public class PostServiceTest {
                 .text("Текст для поста 2")
                 .tags(List.of("тег1"))
                 .likes(1)
-                .image(new byte[]{})
+                .image(" ")
                 .commentsCount(1)
                 .build();
         post3 = Post.builder()
@@ -68,7 +77,7 @@ public class PostServiceTest {
                 .text("Текст для поста 3")
                 .tags(List.of("тег2"))
                 .likes(0)
-                .image(new byte[]{})
+                .image(" ")
                 .commentsCount(0)
                 .build();
         posts = List.of(post1, post2, post3);
@@ -145,17 +154,14 @@ public class PostServiceTest {
 
     @Test
     void updatePostTest() throws IOException {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.getBytes()).thenReturn(new byte[]{1, 2, 3});
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
 
-        postService.updatePost(1L, "Обновленный пост", "Обновленный текст", "тег3", mockFile);
+        postService.updatePost(1L, "Обновленный пост", "Обновленный текст", "тег3", new MockMultipartFile(" ", new byte[]{}));
 
         assertAll(
                 () -> assertEquals("Обновленный пост", post1.getName()),
                 () -> assertEquals("Обновленный текст", post1.getText()),
-                () -> assertEquals(List.of("тег3"), post1.getTags()),
-                () -> assertArrayEquals(new byte[]{1, 2, 3}, post1.getImage())
+                () -> assertEquals(List.of("тег3"), post1.getTags())
         );
     }
 
@@ -164,12 +170,12 @@ public class PostServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(postRepository.findAllCommentsByPostId(1L)).thenReturn(List.of());
         when(postMapper.toFullDTO(post1, List.of())).thenReturn(FullPostDTO.builder()
-                        .id(1L)
-                        .name("Пост 1")
-                        .text("Текст для поста 1")
-                        .tags(List.of("тег1", "тег2"))
-                        .comments(List.of())
-                        .likes(3)
+                .id(1L)
+                .name("Пост 1")
+                .text("Текст для поста 1")
+                .tags(List.of("тег1", "тег2"))
+                .comments(List.of())
+                .likes(3)
                 .build());
 
         var result = postService.findById(1L);
@@ -182,19 +188,24 @@ public class PostServiceTest {
     }
 
     @Test
-    void createPostTest() {
-        CreatePostDTO postDTO = CreatePostDTO.builder()
-                .name("Пост 4")
-                .text("Текст для поста 4")
-                .tags(List.of("тег4"))
-                .build();
-        Post newPost = Post.builder().id(4L).name("Пост 4").text("Текст для поста 4").tags(List.of("тег4")).build();
+    void createPostTest() throws IOException {
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
-        when(postMapper.fromDTO(postDTO)).thenReturn(newPost);
+        postService.createPost(CreatePostDTO.builder()
+                .name("Пост 1")
+                .text("Текст для поста 1")
+                .tags(List.of("тег1", "тег2"))
+                .image(new MockMultipartFile(" ", new byte[]{}))
+                .build());
 
-        postService.createPost(postDTO);
 
-        verify(postRepository).createPost(newPost);
+        verify(postRepository).createPost(postCaptor.capture());
+
+        Post capturedPost = postCaptor.getValue();
+        assertEquals("Пост 1", capturedPost.getName());
+        assertEquals("Текст для поста 1", capturedPost.getText());
+        assertEquals(List.of("тег1", "тег2"), capturedPost.getTags());
+        assertTrue(capturedPost.getImage() instanceof String);
     }
 
     @Test

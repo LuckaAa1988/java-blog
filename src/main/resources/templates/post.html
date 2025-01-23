@@ -152,8 +152,8 @@
 
     <div class="post-container">
         <h2 th:text="${post.name}"></h2>
-        <img th:src="'data:image/jpeg;base64,' + ${post.image}" alt="Image"/>
-        <p th:text="${post.text}"></p>
+        <img th:src="@{${post.image}}" alt="Image"/>
+        <p th:utext="${post.text}"></p>
         <p>Тэги:
             <span th:each="tag : ${post.tags}">
                 <a th:href="@{/posts/tag/{tag}(tag=${tag})}" th:text="${tag}" class="tag-link"></a>
@@ -169,8 +169,7 @@
     <div class="post-container">
         <button type="button" onclick="toggleForm()">Изменить пост</button>
         <div id="editPostForm" class="form-container" style="display: none;">
-            <form th:action="@{/posts/{id}(id=${post.id})}" method="post" th:object="${createPost}"
-                  enctype="multipart/form-data">
+            <form th:action="@{/posts/{id}(id=${post.id})}" method="post" th:object="${createPost}" enctype="multipart/form-data">
                 <input type="hidden" name="_method" value="patch"/>
                 <label for="name">Название:</label>
                 <input type="text" id="name" th:field="*{name}"/>
