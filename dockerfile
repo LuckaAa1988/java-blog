@@ -1,8 +1,21 @@
-FROM tomcat:10.1-jdk21
+FROM gradle:8-jdk21 AS build
+WORKDIR /app
 
-COPY target/java-blog.war /usr/local/tomcat/webapps/ROOT.war
+COPY gradle gradle
+COPY gradlew .
+COPY build.gradle .
+COPY settings.gradle .
+RUN chmod +x ./gradlew
 
-COPY server.xml /usr/local/tomcat/conf/server.xml
-COPY uploads/2e92c3f2-3d76-45b2-b651-7a14d7231a60.jpg /usr/local/tomcat/uploads/2e92c3f2-3d76-45b2-b651-7a14d7231a60.jpg
+COPY src src
 
-CMD ["catalina.sh", "run"]
+RUN ./gradlew bootJar
+
+FROM amazoncorretto:21-alpine-jdk
+WORKDIR /app
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

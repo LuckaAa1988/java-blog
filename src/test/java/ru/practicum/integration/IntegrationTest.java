@@ -1,14 +1,15 @@
 package ru.practicum.integration;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import ru.practicum.configuration.TestConfig;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.CreatePostDTO;
 import ru.practicum.exception.PostNotFoundException;
 import ru.practicum.service.impl.PostServiceImpl;
@@ -19,8 +20,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
+@SpringBootTest
+@Transactional
 public class IntegrationTest {
 
     @Autowired
@@ -29,12 +30,11 @@ public class IntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @AfterEach
-    void resetDatabase() {
+    @BeforeEach
+    void prepDataBase() {
         jdbcTemplate.execute("DROP ALL OBJECTS");
         jdbcTemplate.execute("RUNSCRIPT FROM 'classpath:schema.sql'");
     }
-
 
     @Test
     public void createPostTest() throws PostNotFoundException, IOException {

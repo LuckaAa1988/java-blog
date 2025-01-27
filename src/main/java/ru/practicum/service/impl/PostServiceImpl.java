@@ -64,12 +64,12 @@ public class PostServiceImpl implements PostService {
         }
         if (!image.isEmpty()) {
             String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-            Path filePath = Paths.get("uploads/" + fileName);
+            Path filePath = Paths.get("uploads/images/" + fileName);
 
             Files.createDirectories(filePath.getParent());
             Files.write(filePath, image.getBytes());
 
-            String imageUrl = "/uploads/" + fileName;
+            String imageUrl = "/images/" + fileName;
             post.setImage(imageUrl);
         }
         postRepository.updatePost(post);
@@ -88,12 +88,12 @@ public class PostServiceImpl implements PostService {
     public void createPost(CreatePostDTO postDTO) throws IOException {
         log.info("Создание поста с данными: {}", postDTO);
         String fileName = UUID.randomUUID() + "_" + postDTO.getImage().getOriginalFilename();
-        Path filePath = Paths.get("uploads/" + fileName);
+        Path filePath = Paths.get("uploads/images/" + fileName);
 
         Files.createDirectories(filePath.getParent());
         Files.write(filePath, postDTO.getImage().getBytes());
 
-        String imageUrl = "/uploads/" + fileName;
+        String imageUrl = "/images/" + fileName;
         postRepository.createPost(Post.builder()
                 .name(postDTO.getName())
                 .text(postDTO.getText())

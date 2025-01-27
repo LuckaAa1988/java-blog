@@ -13,10 +13,8 @@ services:
       - POSTGRES_DB=blogdb
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=12345
-  tomcat:
+  blog:
     build: .
-    volumes:
-      - /usr/local/tomcat/uploads/
     ports:
       - "8080:8080"
     depends_on:
